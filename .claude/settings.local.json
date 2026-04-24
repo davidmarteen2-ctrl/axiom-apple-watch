@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ffmpeg -version)",
+      "Read(//Users/apple/.claude/**)",
+      "Read(//Users/apple/Desktop/web-agency/.claude/skills/**)",
+      "Bash(ffprobe *)",
+      "Bash(mkdir -p /Users/apple/Desktop/web-agency/apple-watch/frames)",
+      "Bash(ffmpeg -i watch.mp4 -vf fps=24 -quality 85 frames/frame_%04d.webp)",
+      "Bash(ffmpeg -i watch.mp4 -vf fps=24 -c:v libwebp -quality 85 frames/frame_%04d.webp)",
+      "Bash(ffmpeg -encoders)",
+      "Bash(ffmpeg -i watch.mp4 -vf fps=24 -c:v png frames/frame_%04d.png)",
+      "Bash(npx serve *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3002/)",
+      "Bash(npx --yes serve /Users/apple/Desktop/web-agency/apple-watch -p 3002)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:60126/)",
+      "Bash(curl -s http://localhost:3002/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost:3002/frames/frame_0001.png\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost:3002/frames/frame_0001.webp\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3002/frames/frame_0001.png)",
+      "Bash(node --input-type=module)",
+      "Bash(node -e ' *)",
+      "Bash(node *)",
+      "Bash(curl -s http://localhost:3002/frames/frame_0001.png)",
+      "Bash(curl -s http://localhost:3002/frames/frame_0060.png)",
+      "Bash(pkill -f \"serve.*3002\")",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} — index\\\\n\" http://localhost:3002/)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} — frame_0001.png\\\\n\" http://localhost:3002/frames/frame_0001.png)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} — frame_0121.png\\\\n\" http://localhost:3002/frames/frame_0121.png)",
+      "Bash(npx --yes serve . -p 3002)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} — frame 1\\\\n\" http://localhost:3002/frames/frame_0001.png)",
+      "Bash(kill 26897)",
+      "Bash(kill 26915)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} index | \" http://localhost:3002/)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} frame_0001.png | \" http://localhost:3002/frames/frame_0001.png)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} frame_0121.png\\\\n\" http://localhost:3002/frames/frame_0121.png)"
+    ]
+  }
+}

@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AXIOM — Beyond Human Precision</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* =============================================
+   RESET & VARIABLES
+   ============================================= */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+
+:root {
+  --bg: #000000;
+  --silver: #C0C0C0;
+  --gold: #C9A84C;
+  --white: #F0F0F0;
+  --font: 'Space Grotesk', sans-serif;
+}
+
+html { scroll-behavior: auto; }
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--font);
+  overflow-x: hidden;
+}
+/* =============================================
+   LOADER
+   ============================================= */
+#loader {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+}
+#loader.hidden {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.8s ease 0.2s, visibility 0.8s ease 0.2s;
+}
+#loader-brand {
+  font-size: 3.5rem;
+  font-weight: 700;
+  letter-spacing: 0.6em;
+  color: var(--gold);
+  opacity: 0;
+  animation: fadeIn 0.9s 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+@keyframes fadeIn { to { opacity: 1; } }
+
+#loader-bar-wrap {
+  width: 220px;
+  height: 1px;
+  background: rgba(192,192,192,0.15);
+  position: relative;
+  overflow: hidden;
+}
+#loader-bar {
+  position: absolute;
+  left: 0; top: 0;
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--silver), var(--gold));
+  transition: width 0.25s ease;
+}
+#loader-percent {
+  font-size: 0.7rem;
+  letter-spacing: 0.25em;
+  color: rgba(192,192,192,0.5);
+  font-weight: 400;
+}
+
+/* =============================================
+   CURSOR
+   ============================================= */
+.cursor-dot {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  background: #ffffff;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+}
+.cursor-ring {
+  position: fixed;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+}
+
+/* =============================================
+   SCROLL PROGRESS
+   ============================================= */
+#scroll-progress {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 2px;
+  height: 0%;
+  background: var(--gold);
+  box-shadow: -1px 0 12px var(--gold), -1px 0 4px var(--gold);
+  z-index: 800;
+  pointer-events: none;
+  transition: height 0.05s linear;
+}
+
+/* =============================================
+   HEADER
+   ============================================= */
+/* Outer row — just positions the pill */
+#site-header {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  z-index: 400;
+  padding: 16px 0 0;
+  pointer-events: none; /* children get clicks */
+}
+
+/* THE PILL */
+#header-pill {
+  pointer-events: auto;
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 8px 8px 24px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: background 0.4s ease, border-color 0.4s ease;
+}
+#site-header.scrolled #header-pill {
+  background: rgba(0,0,0,0.55);
+  border-color: rgba(255,255,255,0.14);
+}
+
+#header-logo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: var(--gold);
+  text-transform: uppercase;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+#header-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.nav-link {
+  font-size: 0.78rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: var(--white);
+  text-decoration: none;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: transparent;
+  transition: background 0.2s ease;
+  overflow: hidden;
+}
+.nav-link:hover { background: rgba(255,255,255,0.08); }
+/* Rydex 3D flip */
+.link-text-wrapper {
+  display: block;
+  overflow: hidden;
+  height: 1.2em;
+  perspective: 600px;
+}
+.link-text,
+.link-text-hover {
+  display: block;
+  line-height: 1.2em;
+  transition: transform 0.3s ease;
+}
+.link-text-hover {
+  transform: translateY(0%) rotateX(-90deg);
+  transform-origin: top center;
+}
+.nav-link:hover .link-text {
+  transform: translateY(-100%) rotateX(90deg);
+  transform-origin: bottom center;
+}
+.nav-link:hover .link-text-hover {
+  transform: translateY(-100%) rotateX(0deg);
+}
+
+#header-cta {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #000;
+  background: var(--gold);
+  padding: 10px 24px;
+  border-radius: 999px;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: opacity 0.2s, box-shadow 0.2s;
+}
+#header-cta:hover {
+  opacity: 0.88;
+  box-shadow: 0 0 22px rgba(201,168,76,0.4);
+}
+
+/* =============================================
+   CANVAS
+   ============================================= */
+#canvas-wrap {
+  position: fixed;
+  left: 40%;
+  top: 0;
+  width: 60%;
+  height: 100vh;
+  z-index: 2;
+}
+#watch-canvas {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50vw;
+  height: 80vh;
+  display: block;
+}
+
+/* =============================================
+   SCROLL SPACER
+   ============================================= */
+#scroll-container {
+  position: relative;
+  height: 600vh;
+  z-index: 0;
+}
+
+/* =============================================
+   TEXT SECTIONS (fixed, left panel)
+   ============================================= */
+.text-section {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 40%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 120px 60px 60px;
+  z-index: 50;
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
+}
+.text-section.visible {
+  pointer-events: auto;
+}
+
+/* =============================================
+   SECTION 1 — HERO
+   ============================================= */
+#section-hero {
+  gap: 0;
+}
+.hero-label {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.4em;
+  color: var(--silver);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  opacity: 0;
+  transform: translateY(20px);
+}
+.hero-h1 {
+  font-size: clamp(5rem, 8vw, 9.5rem);
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+  line-height: 0.88;
+  margin-bottom: 24px;
+  clip-path: inset(0 0 100% 0);
+  will-change: clip-path;
+}
+.hero-sub {
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--silver);
+  letter-spacing: 0.12em;
+  margin-bottom: 48px;
+  opacity: 0;
+  transform: translateY(20px);
+}
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: #000;
+  background: var(--gold);
+  padding: 14px 32px;
+  border-radius: 50px;
+  text-decoration: none;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(20px);
+  align-self: flex-start;
+  transition: box-shadow 0.3s, opacity 0.2s;
+}
+.hero-cta:hover {
+  box-shadow: 0 0 30px rgba(201,168,76,0.45);
+  opacity: 0.9;
+}
+
+/* =============================================
+   SECTION 2 — DECONSTRUCTION
+   ============================================= */
+#section-decon {
+  gap: 24px;
+}
+.decon-line {
+  font-size: clamp(1.6rem, 3vw, 2.8rem);
+  font-weight: 600;
+  color: var(--white);
+  line-height: 1.1;
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 0.9s cubic-bezier(0.76,0,0.24,1);
+  will-change: clip-path;
+}
+.decon-line.revealed { clip-path: inset(0 0 0% 0); }
+.decon-line:last-child { color: var(--gold); }
+
+/* =============================================
+   SECTION 3 — FEATURES
+   ============================================= */
+#section-features { gap: 36px; }
+
+.section-eyebrow {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.4em;
+  color: var(--gold);
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(16px);
+  margin-bottom: 4px;
+}
+.feature-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  opacity: 0;
+  transform: translateX(-60px);
+  will-change: transform, opacity;
+}
+.feature-bullet {
+  font-size: 0.7rem;
+  color: var(--gold);
+  margin-bottom: 2px;
+  letter-spacing: 0.1em;
+}
+.feature-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: 0.02em;
+}
+.feature-desc {
+  font-size: 0.82rem;
+  font-weight: 300;
+  color: var(--silver);
+  letter-spacing: 0.06em;
+}
+
+/* =============================================
+   SECTION 4 — STATS
+   ============================================= */
+#section-stats { gap: 44px; }
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  opacity: 0;
+  transform: translateY(40px);
+  will-change: transform, opacity;
+}
+.stat-number-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.stat-number {
+  font-size: clamp(2.8rem, 4.5vw, 5rem);
+  font-weight: 700;
+  color: var(--gold);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.stat-unit {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--gold);
+}
+.stat-label {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--silver);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* =============================================
+   SECTION 5 — CLOSE
+   ============================================= */
+#section-close {
+  width: 100vw;
+  left: 0;
+  align-items: center;
+  text-align: center;
+  padding: 120px 80px 60px;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  gap: 0;
+}
+.close-line {
+  font-size: clamp(2.4rem, 4.5vw, 5rem);
+  font-weight: 300;
+  color: var(--white);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  opacity: 0;
+  transform: translateY(30px);
+  will-change: transform, opacity;
+}
+.close-line-bold {
+  font-size: clamp(2.4rem, 4.5vw, 5rem);
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 56px;
+  opacity: 0;
+  transform: translateY(30px);
+}
+.close-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: #000;
+  background: var(--gold);
+  padding: 18px 52px;
+  border-radius: 50px;
+  text-decoration: none;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: box-shadow 0.3s, opacity 0.2s;
+}
+.close-cta:hover {
+  box-shadow: 0 0 40px rgba(201,168,76,0.5);
+  opacity: 0.9;
+}
+
+/* =============================================
+   FOOTER
+   ============================================= */
+#site-footer {
+  position: relative;
+  z-index: 60;
+  background: #000;
+  padding: 80px 0 52px;
+  text-align: center;
+  border-top: 1px solid rgba(192,192,192,0.08);
+}
+.footer-brand {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 0.55em;
+  color: var(--gold);
+  margin-bottom: 14px;
+}
+.footer-tagline {
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: var(--silver);
+  letter-spacing: 0.18em;
+  margin-bottom: 36px;
+}
+.footer-copy {
+  font-size: 0.65rem;
+  color: rgba(192,192,192,0.3);
+  letter-spacing: 0.12em;
+}
+
+/* =============================================
+   MOBILE
+   ============================================= */
+@media (max-width: 768px) {
+  #canvas-wrap {
+    left: 0;
+    width: 100%;
+    z-index: 1;
+  }
+  #canvas-wrap::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 2;
+    pointer-events: none;
+  }
+  .text-section {
+    width: 100%;
+    align-items: center;
+    text-align: center;
+    padding: 100px 32px 60px;
+    z-index: 10;
+  }
+  #section-close {
+    width: 100%;
+    padding: 100px 32px 60px;
+  }
+  .hero-cta { align-self: center; }
+  .feature-item { align-items: center; }
+  .stat-item { align-items: center; }
+  #site-header { width: 96%; }
+  #header-pill { padding: 6px 6px 6px 18px; }
+  #header-nav { display: none; }
+  #header-logo { font-size: 0.95rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div id="loader-brand">AXIOM</div>
+  <div id="loader-bar-wrap"><div id="loader-bar"></div></div>
+  <div id="loader-percent">0%</div>
+</div>
+
+<!-- CURSOR -->
+
+<!-- SCROLL PROGRESS -->
+<div id="scroll-progress"></div>
+
+<!-- HEADER -->
+<header id="site-header">
+  <div id="header-pill">
+    <a href="#" id="header-logo">AXIOM</a>
+    <nav id="header-nav">
+      <a href="#" class="nav-link"><div class="link-text-wrapper"><div class="link-text">Health</div><div class="link-text-hover">Health</div></div></a>
+      <a href="#" class="nav-link"><div class="link-text-wrapper"><div class="link-text">Fitness</div><div class="link-text-hover">Fitness</div></div></a>
+      <a href="#" class="nav-link"><div class="link-text-wrapper"><div class="link-text">Design</div><div class="link-text-hover">Design</div></div></a>
+      <a href="#" class="nav-link"><div class="link-text-wrapper"><div class="link-text">Buy</div><div class="link-text-hover">Buy</div></div></a>
+    </nav>
+    <a href="#" id="header-cta">Pre-Order</a>
+  </div>
+</header>
+
+<!-- CANVAS (fixed, right 60%) -->
+<div id="canvas-wrap">
+  <canvas id="watch-canvas"></canvas>
+</div>
+
+<!-- ── SECTION 1: HERO ── -->
+<section class="text-section" id="section-hero">
+  <p class="hero-label">Introducing</p>
+  <h1 class="hero-h1">AXIOM</h1>
+  <p class="hero-sub">Beyond Human Precision</p>
+  <a href="#" class="hero-cta">Discover More ↓</a>
+</section>
+
+<!-- ── SECTION 2: DECONSTRUCTION ── -->
+<section class="text-section" id="section-decon">
+  <div class="decon-line" id="dline-1">Every component.</div>
+  <div class="decon-line" id="dline-2">Every detail.</div>
+  <div class="decon-line" id="dline-3">Engineered beyond limits.</div>
+</section>
+
+<!-- ── SECTION 3: FEATURES ── -->
+<section class="text-section" id="section-features">
+  <p class="section-eyebrow">Engineering</p>
+  <div class="feature-item" id="feat-1">
+    <div class="feature-bullet">◆</div>
+    <div class="feature-name">S9 Neural Chip</div>
+    <div class="feature-desc">10x faster than thought</div>
+  </div>
+  <div class="feature-item" id="feat-2">
+    <div class="feature-bullet">◆</div>
+    <div class="feature-name">Sapphire Crystal</div>
+    <div class="feature-desc">Harder than any obstacle</div>
+  </div>
+  <div class="feature-item" id="feat-3">
+    <div class="feature-bullet">◆</div>
+    <div class="feature-name">18hr Battery</div>
+    <div class="feature-desc">Outlasts every ambition</div>
+  </div>
+</section>
+
+<!-- ── SECTION 4: STATS ── -->
+<section class="text-section" id="section-stats">
+  <p class="section-eyebrow">Specifications</p>
+  <div class="stat-item">
+    <div class="stat-number-row">
+      <span class="stat-number" id="stat-prec">0.1</span>
+      <span class="stat-unit">mm</span>
+    </div>
+    <div class="stat-label">Precision Tolerance</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number-row">
+      <span class="stat-number" id="stat-batt">18</span>
+      <span class="stat-unit">hrs</span>
+    </div>
+    <div class="stat-label">Battery Life</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number-row">
+      <span class="stat-number" id="stat-watr">100</span>
+      <span class="stat-unit">m</span>
+    </div>
+    <div class="stat-label">Water Resistance</div>
+  </div>
+</section>
+
+<!-- ── SECTION 5: CLOSE ── -->
+<section class="text-section" id="section-close">
+  <p class="close-line">The last watch</p>
+  <p class="close-line-bold">you will ever need.</p>
+  <a href="#" class="close-cta">Pre-Order Now →</a>
+</section>
+
+<!-- SCROLL SPACER (600vh) -->
+<div id="scroll-container"></div>
+
+<!-- FOOTER -->
+<footer id="site-footer">
+  <div class="footer-brand">AXIOM</div>
+  <p class="footer-tagline">Crafted for those who demand perfection</p>
+  <p class="footer-copy">© 2026 AXIOM Technologies. All rights reserved.</p>
+</footer>
+
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+
+<!-- CDN SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/lenis@1/dist/lenis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/countup.js@2/dist/countUp.umd.js"></script>
+
+<script>
+/* =============================================
+   AXIOM — MAIN APPLICATION
+   ============================================= */
+
+const FRAME_COUNT = 121;
+const FRAME_EXT   = 'png';
+
+// ── State ────────────────────────────────────
+let frames          = new Array(FRAME_COUNT).fill(null);
+let currentFrame    = 0;
+let activeSection   = null;
+
+// One-time animation flags
+let heroAnimated     = false;
+let deconReveal      = [false, false, false];
+let featuresAnimated = false;
+let statsAnimated    = false;
+let closeAnimated    = false;
+let statsCounters    = false;
+
+// ── DOM refs ─────────────────────────────────
+const loaderEl      = document.getElementById('loader');
+const loaderBar     = document.getElementById('loader-bar');
+const loaderPct     = document.getElementById('loader-percent');
+const scrollProg    = document.getElementById('scroll-progress');
+const siteHeader    = document.getElementById('site-header');
+const canvasWrap    = document.getElementById('canvas-wrap');
+const canvas        = document.getElementById('watch-canvas');
+const ctx           = canvas.getContext('2d');
+
+const sec = {
+  hero:     document.getElementById('section-hero'),
+  decon:    document.getElementById('section-decon'),
+  features: document.getElementById('section-features'),
+  stats:    document.getElementById('section-stats'),
+  close:    document.getElementById('section-close'),
+};
+
+/* =============================================
+   PRELOADER
+   ============================================= */
+function preloadFrames() {
+  return new Promise(resolve => {
+    let done = 0;
+
+    for (let i = 1; i <= FRAME_COUNT; i++) {
+      const img  = new Image();
+      const idx  = i - 1;
+
+      img.onload = img.onerror = () => {
+        frames[idx] = img;
+        done++;
+        const pct = Math.round((done / FRAME_COUNT) * 100);
+        loaderBar.style.width = pct + '%';
+        loaderPct.textContent = pct + '%';
+        if (done === FRAME_COUNT) resolve();
+      };
+
+      img.src = `frames/frame_${String(i).padStart(4, '0')}.${FRAME_EXT}`;
+    }
+  });
+}
+
+/* =============================================
+   CANVAS
+   ============================================= */
+function resizeCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  const w   = canvas.clientWidth;
+  const h   = canvas.clientHeight;
+  canvas.width  = w * dpr;
+  canvas.height = h * dpr;
+  ctx.scale(dpr, dpr);
+  drawFrame(currentFrame);
+}
+
+function drawFrame(index) {
+  const img = frames[index];
+  if (!img || !img.complete || !img.naturalWidth) return;
+
+  const cw = canvas.clientWidth;
+  const ch = canvas.clientHeight;
+  const iw = img.naturalWidth;
+  const ih = img.naturalHeight;
+
+  // Contain: scale down to fit fully, no cropping — letterbox/pillarbox with #000
+  const scale = Math.min(cw / iw, ch / ih);
+  const dw    = iw * scale;
+  const dh    = ih * scale;
+  const dx    = (cw - dw) / 2;
+  const dy    = (ch - dh) / 2;
+
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, cw, ch);
+  ctx.drawImage(img, dx, dy, dw, dh);
+}
+
+function getFrameIndex(progress) {
+  if (progress <= 0.85) {
+    // Forward: 0 → FRAME_COUNT-1 by 85% scroll
+    return Math.min(Math.floor((progress / 0.85) * FRAME_COUNT), FRAME_COUNT - 1);
+  } else {
+    // Reverse: reassemble watch back to frame 0
+    const p = (progress - 0.85) / 0.15;
+    return Math.max(0, Math.floor((1 - p) * (FRAME_COUNT - 1)));
+  }
+}
+
+window.addEventListener('resize', resizeCanvas);
+
+/* =============================================
+   CURSOR
+   ============================================= */
+const dot  = document.querySelector('.cursor-dot');
+const ring = document.querySelector('.cursor-ring');
+let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+
+if (dot && ring) {
+  document.addEventListener('mousemove', e => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    dot.style.left = mouseX + 'px';
+    dot.style.top  = mouseY + 'px';
+  });
+
+  (function animateRing() {
+    ringX += (mouseX - ringX) * 0.12;
+    ringY += (mouseY - ringY) * 0.12;
+    ring.style.left = ringX + 'px';
+    ring.style.top  = ringY + 'px';
+    requestAnimationFrame(animateRing);
+  })();
+}
+
+/* =============================================
+   SECTION SHOW / HIDE
+   ============================================= */
+function showSection(key) {
+  const el = sec[key];
+  if (!el) return;
+  el.classList.add('visible');
+  gsap.to(el, { opacity: 1, duration: 0.55, ease: 'power2.out' });
+}
+
+function hideSection(key) {
+  const el = sec[key];
+  if (!el) return;
+  gsap.to(el, {
+    opacity: 0,
+    duration: 0.4,
+    ease: 'power2.in',
+    onComplete: () => el.classList.remove('visible'),
+  });
+}
+
+/* =============================================
+   HERO ANIMATION
+   ============================================= */
+function animHero() {
+  if (heroAnimated) return;
+  heroAnimated = true;
+
+  const tl = gsap.timeline({ delay: 0.2 });
+  tl.to('#section-hero .hero-label', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' });
+  tl.to('#section-hero .hero-h1',    { clipPath: 'inset(0 0 0% 0)', duration: 1.1, ease: 'power4.inOut' }, '-=0.35');
+  tl.to('#section-hero .hero-sub',   { opacity: 1, y: 0, duration: 0.75, ease: 'power3.out' }, '-=0.55');
+  tl.to('#section-hero .hero-cta',   { opacity: 1, y: 0, duration: 0.75, ease: 'power3.out' }, '-=0.5');
+}
+
+/* =============================================
+   FEATURES ANIMATION
+   ============================================= */
+function animFeatures() {
+  if (featuresAnimated) return;
+  featuresAnimated = true;
+
+  gsap.to('#section-features .section-eyebrow', {
+    opacity: 1, y: 0, duration: 0.6, ease: 'power3.out',
+  });
+  gsap.to(['#feat-1', '#feat-2', '#feat-3'], {
+    opacity: 1, x: 0,
+    stagger: 0.22,
+    duration: 0.95,
+    ease: 'power3.out',
+    delay: 0.18,
+  });
+}
+
+/* =============================================
+   STATS ANIMATION
+   ============================================= */
+function animStats() {
+  if (statsAnimated) return;
+  statsAnimated = true;
+
+  gsap.to('#section-stats .section-eyebrow', {
+    opacity: 1, y: 0, duration: 0.6, ease: 'power3.out',
+  });
+  gsap.to('#section-stats .stat-item', {
+    opacity: 1, y: 0,
+    stagger: 0.18,
+    duration: 0.85,
+    ease: 'power3.out',
+    delay: 0.2,
+    onStart: () => {
+      if (statsCounters) return;
+      statsCounters = true;
+      setTimeout(runCounters, 500);
+    },
+  });
+}
+
+function runCounters() {
+  const items = [
+    { id: 'stat-prec', val: 0.1, dec: 1 },
+    { id: 'stat-batt', val: 18,  dec: 0 },
+    { id: 'stat-watr', val: 100, dec: 0 },
+  ];
+  items.forEach(({ id, val, dec }) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = '0';
+    const cu = new countUp.CountUp(el, val, {
+      decimalPlaces: dec,
+      duration: 2.5,
+      useEasing: true,
+      useGrouping: false,
+    });
+    if (!cu.error) cu.start();
+  });
+}
+
+/* =============================================
+   CLOSE ANIMATION
+   ============================================= */
+function animClose() {
+  if (closeAnimated) return;
+  closeAnimated = true;
+
+  const tl = gsap.timeline({ delay: 0.1 });
+  tl.to('#section-close .close-line',      { opacity: 1, y: 0, duration: 0.95, ease: 'power3.out' });
+  tl.to('#section-close .close-line-bold', { opacity: 1, y: 0, duration: 0.95, ease: 'power3.out' }, '-=0.6');
+  tl.to('#section-close .close-cta',       { opacity: 1, y: 0, duration: 0.8,  ease: 'power3.out' }, '-=0.5');
+}
+
+/* =============================================
+   SCROLL DRIVER
+   ============================================= */
+function onScrollProgress(progress) {
+  // Scroll progress bar (tied to scroll container progress)
+  scrollProg.style.height = (progress * 100).toFixed(1) + '%';
+
+  // Frame update
+  const fi = getFrameIndex(progress);
+  if (fi !== currentFrame) {
+    currentFrame = fi;
+    requestAnimationFrame(() => drawFrame(currentFrame));
+  }
+
+  // Which section to show
+  let newKey = null;
+  if      (progress < 0.15)  newKey = 'hero';
+  else if (progress < 0.40)  newKey = 'decon';
+  else if (progress < 0.65)  newKey = 'features';
+  else if (progress < 0.85)  newKey = 'stats';
+  else                        newKey = 'close';
+
+  if (newKey !== activeSection) {
+    if (activeSection) hideSection(activeSection);
+    showSection(newKey);
+    activeSection = newKey;
+
+    // Trigger section-specific animations
+    if (newKey === 'hero')     animHero();
+    if (newKey === 'features') animFeatures();
+    if (newKey === 'stats')    animStats();
+    if (newKey === 'close')    animClose();
+  }
+
+  // Deconstruction line reveals (within section 2 range 15-40%)
+  if (newKey === 'decon') {
+    const localP = (progress - 0.15) / 0.25; // 0..1 within this section
+
+    if (localP >= 0.05 && !deconReveal[0]) {
+      deconReveal[0] = true;
+      document.getElementById('dline-1').classList.add('revealed');
+    }
+    if (localP >= 0.38 && !deconReveal[1]) {
+      deconReveal[1] = true;
+      document.getElementById('dline-2').classList.add('revealed');
+    }
+    if (localP >= 0.68 && !deconReveal[2]) {
+      deconReveal[2] = true;
+      document.getElementById('dline-3').classList.add('revealed');
+    }
+  }
+}
+
+/* =============================================
+   HEADER SCROLL EFFECT (native window scroll)
+   ============================================= */
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 60) {
+    siteHeader.classList.add('scrolled');
+  } else {
+    siteHeader.classList.remove('scrolled');
+  }
+}, { passive: true });
+
+/* =============================================
+   FOOTER VISIBILITY — hide fixed sections
+   ============================================= */
+const footerObs = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      // Footer visible — hide all fixed sections
+      Object.keys(sec).forEach(k => {
+        const el = sec[k];
+        gsap.to(el, { opacity: 0, duration: 0.5, ease: 'power2.in' });
+        el.classList.remove('visible');
+      });
+      activeSection = null;
+    }
+  });
+}, { threshold: 0.05 });
+
+footerObs.observe(document.getElementById('site-footer'));
+
+/* =============================================
+   INIT
+   ============================================= */
+async function init() {
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Fallback: hide loader after 5s even if frames fail
+  const loaderFallback = setTimeout(() => {
+    loaderEl.classList.add('hidden');
+    resizeCanvas();
+    showSection('hero');
+    activeSection = 'hero';
+    animHero();
+  }, 5000);
+
+  // Load all frames first
+  await preloadFrames();
+  clearTimeout(loaderFallback);
+
+  // Brief minimum display (brand impression)
+  await new Promise(r => setTimeout(r, 500));
+
+  // Hide loader
+  loaderEl.classList.add('hidden');
+
+  // Setup canvas
+  resizeCanvas();
+  drawFrame(0);
+
+  // Show and animate hero immediately
+  showSection('hero');
+  activeSection = 'hero';
+  animHero();
+
+  // ── Lenis smooth scroll ───────────────────
+  const lenis = new Lenis({
+    duration: 1.2,
+    easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    smoothWheel: true,
+  });
+
+  lenis.on('scroll', ScrollTrigger.update);
+  gsap.ticker.add(time => lenis.raf(time * 1000));
+  gsap.ticker.lagSmoothing(0);
+
+  // ── ScrollTrigger frame driver ────────────
+  const scrollContainer = document.getElementById('scroll-container');
+
+  ScrollTrigger.create({
+    trigger: scrollContainer,
+    start: 'top top',
+    end: 'bottom bottom',
+    scrub: true,
+    onUpdate: self => onScrollProgress(self.progress),
+  });
+}
+
+init();
+</script>
+</body>
+</html>
